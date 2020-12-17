@@ -1,6 +1,6 @@
 // Import packages
 import React, { useState, useEffect } from "react"
-import { Helmet } from "react-helmet"
+import { Helmet, HelmetProvider } from "react-helmet-async"
 
 // Import config file
 const { wsType, wsPort } = require("./config.js")
@@ -64,8 +64,12 @@ const App = () => {
                 placeItems: "center",
             }}
         >
-            <Helmet title="Station Reconfiguration" />
-            <div>Process {process.id} - {process.name}</div>
+            <HelmetProvider>
+                <Helmet title="Station Reconfiguration" />
+            </HelmetProvider>
+            <div>
+                Process {process.id} - {process.name}
+            </div>
             <div>Step {step}</div>
         </div>
     )
