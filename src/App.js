@@ -11,7 +11,7 @@ const processes = require("./process.js")
 // Declare the App component
 const App = () => {
     // Declare state variables for the process & step numbers
-    const [process, setProcess] = useState(0)
+    const [process, setProcess] = useState({ steps: [] })
     const [step, setStep] = useState(0)
 
     // Websocket connectivity
@@ -31,6 +31,7 @@ const App = () => {
                 console.log(error)
             }
             console.log(message)
+
             // Operate based on message type
             switch (message.type) {
                 // UPDATE type
@@ -60,8 +61,9 @@ const App = () => {
                 left: 0,
                 right: 0,
                 bottom: 0,
-                display: "grid",
-                placeItems: "center",
+                fontSize: 40,
+                // display: "grid",
+                // placeItems: "center",
             }}
         >
             <HelmetProvider>
@@ -70,7 +72,40 @@ const App = () => {
             <div>
                 Process {process.id} - {process.name}
             </div>
-            <div>Step {step}</div>
+            <div>
+                <div>
+                    {(process.steps || []).map((s, i) => (
+                        <StepBlock
+                            active={step === i}
+                            complete={step > i}
+                            step={i + 1}
+                        />
+                    ))}
+                </div>
+                <div>{process.steps[step]}</div>
+            </div>
+        </div>
+    )
+}
+
+const StepBlock = (props) => {
+    return (
+        <div
+            style={{
+                display: "inline-grid",
+                margin: 10,
+                placeItems: "center",
+                width: 100,
+                height: 100,
+                background: props.complete
+                    ? "green"
+                    : props.active
+                    ? "yellow"
+                    : "grey",
+                fontSize: 40,
+            }}
+        >
+            {props.step}
         </div>
     )
 }
