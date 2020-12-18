@@ -1,3 +1,14 @@
+/*
+
+App.js
+-   Frontend React app
+
+Joe Hicks | pmyjeh | 14189098
+2020-12-17
+The University of Nottingham
+
+*/
+
 // Import packages
 import React, { useState, useEffect } from "react"
 import { Helmet, HelmetProvider } from "react-helmet-async"
