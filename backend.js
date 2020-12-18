@@ -24,7 +24,7 @@ const { wsType, webPort, wsPort } = require("./src/config.js")
 // Setup file to store data
 const dataFile = "./data.csv"
 if (!fs.existsSync(dataFile)) {
-    fs.writeFileSync(dataFile, "time,barcode,depth")
+    fs.writeFileSync(dataFile, "time,barcode,depth\n")
 }
 
 //
@@ -95,11 +95,14 @@ client.on("message", function (topic, message) {
         case topics.barcodeRead:
             console.log(`Barcode changed: ${message.toString()}`)
             break
+        // Request to record data
         case topics.recordData:
+            // Ingest data from packet
             const barcode = message.toString("utf-8", 0, 8)
             const depth = message.readUInt32LE(8)
-            console.log(`${barcode} ${depth}`)
-            fs.appendFileSync("./data.csv", `\n${new Date().toISOString()},${barcode},${depth}`)
+            console.log(`Saving depth reading of ${depth} for barcode: ${barcode}`)
+            // Add to the data file
+            fs.appendFileSync("./data.csv", `${new Date().toISOString()},${barcode},${depth}\n`)
             break
         default:
             break
