@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react"
 import { Helmet, HelmetProvider } from "react-helmet-async"
 
 // Import config file
-const { wsType, wsPort } = require("./config.js")
+const { wsType, wsPort, webPort } = require("./config.js")
 
 // Import process definitions
 const processes = require("./process.js")
@@ -66,13 +66,16 @@ const App = () => {
                 // placeItems: "center",
             }}
         >
+            {/* Change tab title */}
             <HelmetProvider>
                 <Helmet title="Station Reconfiguration" />
             </HelmetProvider>
+            {/* Display process ID and name */}
             <div>
                 Process {process.id} - {process.name}
             </div>
             <div>
+                {/* Display steps as visual blocks */}
                 <div>
                     {(process.steps || []).map((s, i) => (
                         <StepBlock
@@ -82,12 +85,27 @@ const App = () => {
                         />
                     ))}
                 </div>
+                {/* Display step friendly text */}
                 <div>{process.steps[step]}</div>
+            </div>
+            {/* Send a step signal to the Siemens PLC via the backend API */}
+            <div>
+                <a
+                    href={"#"}
+                    onClick={() =>
+                        fetch(
+                            `http://${window.location.hostname}:${webPort}/step`
+                        )
+                    }
+                >
+                    step
+                </a>
             </div>
         </div>
     )
 }
 
+// Reusable component for step visual block
 const StepBlock = (props) => {
     return (
         <div

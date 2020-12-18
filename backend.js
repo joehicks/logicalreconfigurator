@@ -32,6 +32,7 @@ const topics = {
     resetDepth: "dt_reset_depth",
     requestDepth: "dt_request_depth",
     reportDepth: "dt_report_depth",
+    barcodeRead: "bs_barcode_read",
     controlSiemens: "ctl_siemens",
     controlBeckhoff: "ctl_beckhoff",
     processNumbers: "pd_process_numbers",
@@ -51,10 +52,11 @@ client.on("connect", function () {
 let process = 0
 let step = 0
 
-const createMessage = (type, data) => JSON.stringify({
-    type: type,
-    ...data
-})
+const createMessage = (type, data) =>
+    JSON.stringify({
+        type: type,
+        ...data,
+    })
 
 // Handle incoming messages
 client.on("message", function (topic, message) {
@@ -68,10 +70,12 @@ client.on("message", function (topic, message) {
             step = message.readInt16LE(2)
 
             wss.clients.forEach((client) => {
-                client.send(createMessage(wsType.UPDATE, {
-                    process: process,
-                    step: step
-                }))
+                client.send(
+                    createMessage(wsType.UPDATE, {
+                        process: process,
+                        step: step,
+                    })
+                )
             })
             break
         default:
@@ -93,6 +97,12 @@ app.listen(webPort, () => {
     console.log(`Backend server up on port ${webPort}`)
 })
 
+// Step Siemens process forward
+app.get("/step", (req, res) => {
+    client.publish("ctl_step", Buffer.from([1]))
+    res.send("ok")
+})
+
 //
 // Websocket server - realtime communication with interface
 //
@@ -102,9 +112,13 @@ const wss = new WebSocket.Server({
     port: wsPort,
 })
 
+// Run when a new Websocket connection is established
 wss.on("connection", (ws) => {
-    ws.send(createMessage(wsType.UPDATE, {
-        process: process,
-        step: step
-    }))
+    // Send an update packet with the current process ID & step
+    ws.send(
+        createMessage(wsType.UPDATE, {
+            process: process,
+            step: step,
+        })
+    )
 })
