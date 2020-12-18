@@ -16,9 +16,16 @@ The University of Nottingham
 const mqtt = require("mqtt")
 const express = require("express")
 const WebSocket = require("ws")
+const fs = require("fs")
 
 // Import from config file
 const { wsType, webPort, wsPort } = require("./src/config.js")
+
+// Setup file to store data
+const dataFile = "./data.csv"
+if (!fs.existsSync(dataFile)) {
+    fs.writeFileSync(dataFile, "time,barcode,depth")
+}
 
 //
 // MQTT operations
@@ -37,10 +44,16 @@ const topics = {
     controlSiemens: "ctl_siemens",
     controlBeckhoff: "ctl_beckhoff",
     processNumbers: "pd_process_numbers",
+    recordData: "rec_record_data",
 }
 
 // Declare an array of the topics to subscribe to
-const subscriptions = [topics.reportDepth, topics.processNumbers, topics.barcodeRead]
+const subscriptions = [
+    topics.reportDepth,
+    topics.processNumbers,
+    topics.barcodeRead,
+    topics.recordData,
+]
 
 // Once connection to MQTT broker is established, subscribe to the required topics
 client.on("connect", function () {
@@ -81,6 +94,12 @@ client.on("message", function (topic, message) {
             break
         case topics.barcodeRead:
             console.log(`Barcode changed: ${message.toString()}`)
+            break
+        case topics.recordData:
+            const barcode = message.toString("utf-8", 0, 8)
+            const depth = message.readUInt32LE(8)
+            console.log(`${barcode} ${depth}`)
+            fs.appendFileSync("./data.csv", `\n${new Date().toISOString()},${barcode},${depth}`)
             break
         default:
             break
