@@ -40,7 +40,7 @@ const topics = {
 }
 
 // Declare an array of the topics to subscribe to
-const subscriptions = [topics.reportDepth, topics.processNumbers]
+const subscriptions = [topics.reportDepth, topics.processNumbers, topics.barcodeRead]
 
 // Once connection to MQTT broker is established, subscribe to the required topics
 client.on("connect", function () {
@@ -78,6 +78,9 @@ client.on("message", function (topic, message) {
                     })
                 )
             })
+            break
+        case topics.barcodeRead:
+            console.log(`Barcode changed: ${message.toString()}`)
             break
         default:
             break
