@@ -45,6 +45,7 @@ const topics = {
     controlBeckhoff: "ctl_beckhoff",
     processNumbers: "pd_process_numbers",
     recordData: "rec_record_data",
+    updateSequence: "ctl_update_sequence"
 }
 
 // Declare an array of the topics to subscribe to
@@ -126,6 +127,14 @@ app.listen(webPort, () => {
 // Step Siemens process forward
 app.get("/step", (req, res) => {
     client.publish("ctl_step", Buffer.from([1]))
+    res.send("ok")
+})
+
+// Test function to push update
+app.get("/prog", (req, res) => {
+    const prog = fs.readFileSync("./prog.hex")
+    client.publish(topics.updateSequence, prog)
+    console.log(prog)
     res.send("ok")
 })
 
