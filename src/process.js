@@ -16,7 +16,7 @@ const unknown = {
     ]
 }
 
-const processes = [
+const processList = [
     {
         id: 0,
         name: "Sequence complete",
@@ -90,9 +90,9 @@ const processes = [
 
 ]
 
-module.exports = (id) => {
+export const processes = (id) => {
     // Locate the process with the correct ID
-    const result = processes.find(p => p.id === id)
+    const result = processList.find(p => p.id === id)
 
     // If found return process else return unknown process
     return !!result ? result : unknown

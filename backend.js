@@ -13,13 +13,13 @@ The University of Nottingham
 */
 
 // Import libraries
-const mqtt = require("mqtt")
-const express = require("express")
-const WebSocket = require("ws")
-const fs = require("fs")
+import mqtt from "mqtt"
+import express from "express"
+import WebSocket from "ws"
+import fs from "fs"
 
 // Import from config file
-const { wsType, webPort, wsPort } = require("./src/config.js")
+import { wsType, webPort, wsPort } from "./src/config.js"
 
 // Setup file to store data
 const dataFile = "./data.csv"

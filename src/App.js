@@ -13,11 +13,11 @@ The University of Nottingham
 import React, { useState, useEffect } from "react"
 import { Helmet, HelmetProvider } from "react-helmet-async"
 
-// Import config file
-const { wsType, wsPort, webPort } = require("./config.js")
-
 // Import process definitions
-const processes = require("./process.js")
+import { processes } from "./process.js"
+
+// Import config file
+import { wsType, wsPort, webPort } from "./config.js"
 
 // Declare the App component
 const App = () => {
@@ -85,7 +85,7 @@ const App = () => {
             {/* Display process ID and name */}
             
 
-            d
+            
             
 
 
