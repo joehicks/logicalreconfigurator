@@ -62,6 +62,7 @@ const App = () => {
         }
     }, [])
 
+
     // JSX to render App component
     return (
         <div
@@ -82,36 +83,12 @@ const App = () => {
                 <Helmet title="Station Reconfiguration" />
             </HelmetProvider>
             {/* Display process ID and name */}
-            <div>
-                Process {process.id} - {process.name}
-            </div>
-            <div>
-                {/* Display steps as visual blocks */}
-                <div>
-                    {(process.steps || []).map((s, i) => (
-                        <StepBlock
-                            active={step === i}
-                            complete={step > i}
-                            step={i + 1}
-                        />
-                    ))}
-                </div>
-                {/* Display step friendly text */}
-                <div>{process.steps[step]}</div>
-            </div>
-            {/* Send a step signal to the Siemens PLC via the backend API */}
-            <div>
-                <a
-                    href={"#"}
-                    onClick={() =>
-                        fetch(
-                            `http://${window.location.hostname}:${webPort}/step`
-                        )
-                    }
-                >
-                    step
-                </a>
-            </div>
+            
+
+            d
+            
+
+
         </div>
     )
 }
