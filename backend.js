@@ -132,7 +132,7 @@ app.get("/step", (req, res) => {
 
 // Test function to push update
 app.get("/prog", (req, res) => {
-    const prog = fs.readFileSync("./prog.hex")
+    const prog = fs.readFileSync("./newprog.hex")
     client.publish(topics.updateSequence, prog)
     console.log(prog)
     res.send("ok")
