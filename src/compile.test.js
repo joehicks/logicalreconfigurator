@@ -53,6 +53,11 @@ const instructions = [
     {
         id: "INST00000006",
         process: 10,
+        next: "INST00000015"
+    },
+    {
+        id: "INST00000015",
+        process: 11,
         next: "INST00000007"
     },
     {
