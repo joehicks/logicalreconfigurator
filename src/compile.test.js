@@ -16,7 +16,18 @@ const instructions = [
     {
         id: "INST00000003",
         process: 21,
+        next: "INST00000010"
+    },
+    {
+        id: "INST00000010",
+        process: 102,
+        arguments: ["3333****", "INST00000011"],
         next: "INST00000004"
+    },
+    {
+        id: "INST00000011",
+        process: 4,
+        next: "INST00000000"
     },
     {
         id: "INST00000004",
@@ -26,7 +37,18 @@ const instructions = [
     {
         id: "INST00000005",
         process: 3,
+        next: "INST00000012"
+    },
+    {
+        id: "INST00000012",
+        process: 102,
+        arguments: ["3331****", "INST00000013"],
         next: "INST00000006"
+    },
+    {
+        id: "INST00000013",
+        process: 8,
+        next: "INST00000000"
     },
     {
         id: "INST00000006",
@@ -53,6 +75,30 @@ const instructions = [
         id: "INST00000008",
         process: 8,
         next: "INST00000000"
+    },
+    {
+        id: "INST00000000",
+        process: 100,
+        arguments: ["INST00000001"],
+        next: "INST00000020"
+    },
+    {
+        id: "INST00000020",
+        process: 0,
+        next: "INSTaaaaaaaa"
+    }
+]
+
+const i2 = [
+    {
+        id: "INST00000001",
+        process: 1,
+        next: "INST00000002"
+    },
+    {
+        id: "INST00000002",
+        process: 20,
+        next: "INST00000002"
     },
     {
         id: "INST00000000",
