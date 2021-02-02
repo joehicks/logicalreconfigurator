@@ -20,16 +20,20 @@ const processList = [
     {
         id: 0,
         name: "Sequence complete",
-        steps: [
-            "Return to flow start"
-        ]
+        steps: ["Return to flow start"],
+        needs: 0b000000,
+        procludes: 0b000000,
+        sets: 0b000000,
+        clears: 0b000000,
     },
     {
         id: 1,
         name: "Wait for start button press",
-        steps: [
-            "Await press"
-        ]
+        steps: ["Await press"],
+        needs: 0b000000,
+        procludes: 0b000000,
+        sets: 0b000000,
+        clears: 0b000000,
     },
     {
         id: 2,
@@ -37,31 +41,45 @@ const processList = [
         steps: [
             "Move transfer arm",
             "Release stop and move part to test conveyor",
-            "Part travel to test prestop"
-        ]
+            "Part travel to test prestop",
+        ],
+        needs: 0b001000,
+        procludes: 0b000000,
+        sets: 0b000100,
+        clears: 0b001000,
     },
     {
         id: 3,
         name: "Transfer part in test prestop to test stop",
-        steps: [
-            "Transfer part in test prestop to test stop"
-        ]
+        steps: ["Transfer part in test prestop to test stop"],
+        needs: 0b000100,
+        procludes: 0b000000,
+        sets: 0b000010,
+        clears: 0b000100,
     },
     {
         id: 7,
         name: "Transfer part in test stop to main conveyor",
         steps: [
             "Release test stop and advance transfer device",
-            "Retract transfer device and part"
-        ]
+            "Retract transfer device and part",
+        ],
+        needs: 0b000010,
+        procludes: 0b000000,
+        sets: 0b100000,
+        clears: 0b000010,
     },
     {
         id: 8,
         name: "Reject part in test stop",
         steps: [
             "Release test stop and start test conveyor",
-            "Return test stop to closed position"
-        ]
+            "Return test stop to closed position",
+        ],
+        needs: 0b000010,
+        procludes: 0b000000,
+        sets: 0b100000,
+        clears: 0b000010,
     },
     {
         id: 10,
@@ -70,29 +88,126 @@ const processList = [
             "",
             "Request depth counter reset",
             "Advance test plunger",
-            "Await depth reading and retract test plunger"
-        ]
+            "Await depth reading and retract test plunger",
+        ],
+        needs: 0b000010,
+        procludes: 0b000000,
+        sets: 0b000001,
+        clears: 0b000000,
+    },
+    {
+        id: 11,
+        name: "Record test data",
+        steps: [],
+        needs: 0b010001,
+        procludes: 0b000000,
+        sets: 0b000000,
+        clears: 0b000000,
+    },
+    {
+        id: 20,
+        name: "Wait for barcode",
+        steps: [],
+        needs: 0b100000,
+        procludes: 0b000000,
+        sets: 0b000000,
+        clears: 0b000000,
+    },
+    {
+        id: 21,
+        name: "Store latest barcode",
+        steps: [],
+        needs: 0b100000,
+        procludes: 0b000000,
+        sets: 0b010000,
+        clears: 0b000000,
     },
     {
         id: 54,
         name: "Advance main conveyor slightly",
-        steps: [
-            "Advance main conveyor slightly"
-        ]
+        steps: ["Advance main conveyor slightly"],
+        needs: 0b100000,
+        procludes: 0b000000,
+        sets: 0b000000,
+        clears: 0b000000,
+    },
+    {
+        id: 100,
+        name: "Jump",
+        hide: true,
+        steps: [],
+        needs: 0b000000,
+        procludes: 0b000000,
+        sets: 0b000000,
+        clears: 0b000000,
+        length: 4,
+        construct: (to) => {
+            const buf = Buffer.alloc(4)
+            buf[0] = 100
+            buf[1] = 4
+            buf.writeInt16BE(to, 2)
+            return buf
+        },
+    },
+    {
+        id: 101,
+        name: "Jump if depth GT",
+        steps: [],
+        needs: 0b000001,
+        procludes: 0b000000,
+        sets: 0b000000,
+        clears: 0b000000,
+        length: 8,
+        construct: (compare, to) => {
+            const buf = Buffer.alloc(8)
+            buf[0] = 101
+            buf[1] = 8
+            buf.writeUInt32BE(compare, 2)
+            buf.writeInt16BE(to, 6)
+            return buf
+        },
+    },
+    {
+        id: 102,
+        name: "Jump if barcode matches",
+        steps: [],
+        needs: 0b000001,
+        procludes: 0b000000,
+        sets: 0b000000,
+        clears: 0b000000,
+        length: 13,
+        construct: (compare, to) => {
+            const buf = Buffer.alloc(13)
+            buf[0] = 102
+            buf[1] = 13
+            buf[10] = 0
+            buf.write(compare, 2)
+            buf.writeInt16BE(to, 11)
+            return buf
+        },
     },
     {
         id: 666,
         name: "name",
-        steps: [
-            "step1"
-        ]
+        steps: ["step1"],
     },
-
 ]
 
+const defaultConstructor = (id) => () => Buffer.from([id, 2])
+
+
+// Export a processes function
 export const processes = (id) => {
     // Locate the process with the correct ID
     const result = processList.find(p => p.id === id)
+
+    // If no constructor or length use default
+    if (!!result && !result.construct) {
+        result.construct = defaultConstructor(id)
+    }
+    if (!!result && !result.length) {
+        result.length = 2
+    }
 
     // If found return process else return unknown process
     return !!result ? result : unknown
