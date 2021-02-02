@@ -58,6 +58,15 @@ const processList = [
         clears: 0b000100,
     },
     {
+        id: 4,
+        name: "Exit on main line from entry stop",
+        steps: [],
+        needs: 0b001000,
+        procludes: 0b000000,
+        sets: 0b100000,
+        clears: 0b001000,
+    },
+    {
         id: 7,
         name: "Transfer part in test stop to main conveyor",
         steps: [
