@@ -8,6 +8,9 @@ Joe Hicks | pmyjeh | 14189098
 The University of Nottingham
 
 */
+// Import argument types
+import argTypes from "./argtypes.js"
+
 const unknown = {
     id: -1,
     name: "Undefined process",
@@ -25,6 +28,7 @@ const processList = [
         procludes: 0b000000,
         sets: 0b000000,
         clears: 0b000000,
+        arguments: [],
     },
     {
         id: 1,
@@ -34,6 +38,7 @@ const processList = [
         procludes: 0b000000,
         sets: 0b000000,
         clears: 0b000000,
+        arguments: [],
     },
     {
         id: 2,
@@ -47,6 +52,7 @@ const processList = [
         procludes: 0b000000,
         sets: 0b000100,
         clears: 0b001000,
+        arguments: [],
     },
     {
         id: 3,
@@ -56,6 +62,7 @@ const processList = [
         procludes: 0b000000,
         sets: 0b000010,
         clears: 0b000100,
+        arguments: [],
     },
     {
         id: 4,
@@ -65,6 +72,7 @@ const processList = [
         procludes: 0b000000,
         sets: 0b100000,
         clears: 0b001000,
+        arguments: [],
     },
     {
         id: 7,
@@ -77,6 +85,7 @@ const processList = [
         procludes: 0b000000,
         sets: 0b100000,
         clears: 0b000010,
+        arguments: [],
     },
     {
         id: 8,
@@ -89,6 +98,7 @@ const processList = [
         procludes: 0b000000,
         sets: 0b100000,
         clears: 0b000010,
+        arguments: [],
     },
     {
         id: 10,
@@ -103,6 +113,7 @@ const processList = [
         procludes: 0b000000,
         sets: 0b000001,
         clears: 0b000000,
+        arguments: [],
     },
     {
         id: 11,
@@ -112,6 +123,7 @@ const processList = [
         procludes: 0b000000,
         sets: 0b000000,
         clears: 0b000000,
+        arguments: [],
     },
     {
         id: 20,
@@ -121,6 +133,7 @@ const processList = [
         procludes: 0b000000,
         sets: 0b000000,
         clears: 0b000000,
+        arguments: [],
     },
     {
         id: 21,
@@ -130,6 +143,7 @@ const processList = [
         procludes: 0b000000,
         sets: 0b010000,
         clears: 0b000000,
+        arguments: [],
     },
     {
         id: 54,
@@ -139,6 +153,7 @@ const processList = [
         procludes: 0b000000,
         sets: 0b000000,
         clears: 0b000000,
+        arguments: [],
     },
     {
         id: 100,
@@ -149,6 +164,7 @@ const processList = [
         procludes: 0b000000,
         sets: 0b000000,
         clears: 0b000000,
+        arguments: [argTypes.node],
         length: 4,
         construct: (to) => {
             const buf = Buffer.alloc(4)
@@ -166,6 +182,7 @@ const processList = [
         procludes: 0b000000,
         sets: 0b000000,
         clears: 0b000000,
+        arguments: [argTypes.number, argTypes.node],
         length: 8,
         construct: (compare, to) => {
             const buf = Buffer.alloc(8)
@@ -184,6 +201,7 @@ const processList = [
         procludes: 0b000000,
         sets: 0b000000,
         clears: 0b000000,
+        arguments: [argTypes.string, argTypes.node],
         length: 13,
         construct: (compare, to) => {
             const buf = Buffer.alloc(13)
@@ -194,16 +212,13 @@ const processList = [
             buf.writeInt16BE(to, 11)
             return buf
         },
-    },
-    {
-        id: 666,
-        name: "name",
-        steps: ["step1"],
-    },
+    }
 ]
 
 const defaultConstructor = (id) => () => Buffer.from([id, 2])
 
+// Export the full process list without constructors
+export const allProcesses = processList
 
 // Export a processes function
 export const processes = (id) => {
