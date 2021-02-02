@@ -15,10 +15,12 @@ import { Helmet, HelmetProvider } from "react-helmet-async"
 import ReactFlow from 'react-flow-renderer';
 
 // Import process definitions
-import { processes } from "./process.js"
+import { processes, allProcesses } from "./process.js"
+import argTypes from "./argtypes.js"
 
 // Import config file
 import { wsType, wsPort, webPort } from "./config.js"
+
 
 // Declare the App component
 const App = () => {
@@ -70,7 +72,7 @@ const App = () => {
             position: {
                 x: 100, y: 100
             },
-            data: { label: 'Node 1' }
+            data: { label: "hi" }
         },
         {
             id: "2",
@@ -82,7 +84,21 @@ const App = () => {
         }
     ]
 
-    console.log(processes(102).construct(...["3334****", 471]))
+    console.log(allProcesses)
+
+    const flow2 = allProcesses.map(proc => ({
+        id: `${proc.id}`,
+        type: "default",
+        position: {
+            x: 100, y: 100
+        },
+        data: {
+            label: <div>
+            <h1>{!!proc ? proc.name : "what"}</h1>
+            {!!proc ? proc.arguments.map(arg => <div>{arg}</div>): ""}
+        </div>
+        }
+    }))
 
 
     // JSX to render App component
@@ -106,7 +122,7 @@ const App = () => {
             </HelmetProvider>
             {/* Display process ID and name */}
             
-            <ReactFlow elements={flow}/>
+            <ReactFlow elements={flow2}/>
 
         </div>
     )
