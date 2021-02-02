@@ -12,6 +12,7 @@ The University of Nottingham
 // Import packages
 import React, { useState, useEffect } from "react"
 import { Helmet, HelmetProvider } from "react-helmet-async"
+import ReactFlow from 'react-flow-renderer';
 
 // Import process definitions
 import { processes } from "./process.js"
@@ -62,6 +63,27 @@ const App = () => {
         }
     }, [])
 
+    const flow = [
+        {
+            id: "1",
+            type: "input",
+            position: {
+                x: 100, y: 100
+            },
+            data: { label: 'Node 1' }
+        },
+        {
+            id: "2",
+            type: "output",
+            position: {
+                x: 200, y: 200
+            },
+            data: { label: 'Node 2' }
+        }
+    ]
+
+    console.log(processes(102).construct(...["3334****", 471]))
+
 
     // JSX to render App component
     return (
@@ -84,10 +106,7 @@ const App = () => {
             </HelmetProvider>
             {/* Display process ID and name */}
             
-
-            
-            
-
+            <ReactFlow elements={flow}/>
 
         </div>
     )
