@@ -9,7 +9,7 @@ for (const proc of allProcesses) {
         // const outNodes =
         //     proc.arguments.filter((a) => a === argTypes.node).length + 1
         return (
-            <>
+            <div style={{padding: "1rem", border: "1px solid black"}}>
                 <Handle type="target" id="in" position="left" />
                 <Handle type="source" id="out" position="right" />
 
@@ -61,7 +61,7 @@ for (const proc of allProcesses) {
                             return null
                     }
                 })}
-            </>
+            </div>
         )
     }
 
