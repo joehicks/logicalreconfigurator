@@ -1,19 +1,25 @@
+// Import modules
 import { allProcesses } from "./process.js"
 import { Handle } from "react-flow-renderer"
 import argTypes from "./argtypes.js"
 
+// Create an empty object to return
 const customNodes = {}
 
+// Iterate through all processes in the process.js config file
 for (const proc of allProcesses) {
+    // Create a custom node element
     const node = ({ data }) => {
-        // const outNodes =
-        //     proc.arguments.filter((a) => a === argTypes.node).length + 1
         return (
             <div style={{padding: "1rem", border: "1px solid black"}}>
+                {/* In & out handles */}
                 <Handle type="target" id="in" position="left" />
                 <Handle type="source" id="out" position="right" />
 
+                {/* Process title */}
                 <strong>{proc.name}</strong>
+
+                {/* Render argument appropriately */}
                 {proc.arguments.map((aType, index) => {
                     switch (aType) {
                         case argTypes.string:
@@ -65,6 +71,7 @@ for (const proc of allProcesses) {
         )
     }
 
+    // Add the new style to the object
     customNodes[`${proc.id}`] = node
 }
 
