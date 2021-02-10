@@ -1,5 +1,5 @@
-const webPort = 8080
-const wsPort = 8081
+const webPort = 44302
+const wsPort = 44303
 const wsType = {
     UPDATE: "update",
 }
