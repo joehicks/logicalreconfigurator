@@ -12,94 +12,117 @@ The University of Nottingham
 // Import packages
 import React, { useState, useEffect } from "react"
 import { Helmet, HelmetProvider } from "react-helmet-async"
-import ReactFlow from 'react-flow-renderer';
+import ReactFlow from "react-flow-renderer"
 
-// Import process definitions
-import { processes, allProcesses } from "./process.js"
-import argTypes from "./argtypes.js"
+// Import custom React Flow nodes
+import customNodes from "./customFlowNodesFromProcesses"
+import argTypes from "./argtypes"
 
-// Import config file
-import { wsType, wsPort, webPort } from "./config.js"
-
+// Import process details from config
+import { processes } from "./process"
 
 // Declare the App component
 const App = () => {
-    // Declare state variables for the process & step numbers
-    const [process, setProcess] = useState({ steps: [] })
-    const [step, setStep] = useState(0)
+    const [sequence, setSequence] = useState([
+        {
+            id: "INST00000010",
+            process: 102,
+            arguments: ["3333****", null],
+            next: "INST00000007",
+        },
+        {
+            id: "INST00000007",
+            process: 101,
+            arguments: [471, "INST00000010"],
+            next: null,
+        },
+    ])
 
-    // Websocket connectivity
+    const [flow, setFlow] = useState([])
+
+    const updateArg = (id, arg, value) => {
+        const seq = [...sequence]
+        const node = seq.find((s) => s.id === id)
+        if (!node) {
+            return console.log(`No node with id = ${id}`)
+        }
+        if (!node.arguments) {
+            return console.log("No arguments required")
+        }
+        if (node.arguments.length <= arg) {
+            return console.log("Argument out of range")
+        }
+        node.arguments[arg] = value
+
+        setSequence(seq)
+    }
+
+    const getArg = (id, arg) => {
+        const node = sequence.find((s) => s.id === id)
+        if (!node) {
+            return console.log(`No node with id = ${id}`)
+        }
+        if (!node.arguments) {
+            return console.log("No arguments")
+        }
+        if (node.arguments.length <= arg) {
+            return console.log("Argument out of range")
+        }
+        return node.arguments[arg]
+    }
+
+    const setNext = (id, next) => {
+        const seq = [...sequence]
+        const node = seq.find((s) => s.id === id)
+        if (!node) {
+            return console.log(`No node with id = ${id}`)
+        }
+        node.next = next
+        setSequence(seq)
+    }
+
     useEffect(() => {
-        // Create a new websocket client
-        const ws = new WebSocket(`ws://${window.location.hostname}:${wsPort}`)
-
-        // Handle messages
-        ws.onmessage = (e) => {
-            let message = {}
-
-            // Get message object from received JSON
-            try {
-                message = JSON.parse(e.data)
-            } catch (error) {
-                console.log("Websocket message was not valid JSON")
-                console.log(error)
-            }
-            console.log(message)
-
-            // Operate based on message type
-            switch (message.type) {
-                // UPDATE type
-                case wsType.UPDATE:
-                    // Update process & step state
-                    setProcess(processes(parseInt(message.process)))
-                    setStep(parseInt(message.step))
-                    break
-
-                // Catch-all
-                default:
-                    console.log(
-                        `Unknown Websocket message type: ${message.type}`
-                    )
-                    break
-            }
-        }
-    }, [])
-
-    const flow = [
-        {
-            id: "1",
-            type: "input",
-            position: {
-                x: 100, y: 100
+        // Convert the sequence array into an array of nodes
+        const nodes = sequence.map((s) => ({
+            id: s.id,
+            type: `${s.process}`,
+            data: {
+                updateArg: updateArg,
+                getArg: getArg,
+                id: s.id,
             },
-            data: { label: "hi" }
-        },
-        {
-            id: "2",
-            type: "output",
-            position: {
-                x: 200, y: 200
-            },
-            data: { label: 'Node 2' }
+            position: { x: 100, y: 100 },
+        }))
+
+        // Extract edges from the sequence array
+        const edges = []
+        for (const s of sequence) {
+            const procArgs = processes(s.process).arguments
+            for (let i = 0; i < s.arguments.length; i++) {
+                if (procArgs[i] === argTypes.node && !!s.arguments[i]) {
+                    edges.push({
+                        id: `${s.id}${i}-${s.arguments[i]}in`,
+                        source: s.id,
+                        sourceHandle: `${i}`,
+                        target: s.arguments[i],
+                        targetHandle: "in",
+                    })
+                }
+            }
+            if (!s.next) {
+                continue
+            }
+            edges.push({
+                id: `${s.id}out-${s.next}in`,
+                source: s.id,
+                sourceHandle: "out",
+                target: s.next,
+                targetHandle: "in",
+            })
         }
-    ]
-
-    console.log(allProcesses)
-
-    const flow2 = allProcesses.map(proc => ({
-        id: `${proc.id}`,
-        type: "default",
-        position: {
-            x: 100, y: 100
-        },
-        data: {
-            label: <div>
-            <h1>{!!proc ? proc.name : "what"}</h1>
-            {!!proc ? proc.arguments.map(arg => <div>{arg}</div>): ""}
-        </div>
-        }
-    }))
-
+        setFlow([...nodes, ...edges])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [sequence])
 
     // JSX to render App component
     return (
@@ -121,32 +144,20 @@ const App = () => {
                 <Helmet title="Station Reconfiguration" />
             </HelmetProvider>
             {/* Display process ID and name */}
-            
-            <ReactFlow elements={flow2}/>
 
-        </div>
-    )
-}
-
-// Reusable component for step visual block
-const StepBlock = (props) => {
-    return (
-        <div
-            style={{
-                display: "inline-grid",
-                margin: 10,
-                placeItems: "center",
-                width: 100,
-                height: 100,
-                background: props.complete
-                    ? "green"
-                    : props.active
-                    ? "yellow"
-                    : "grey",
-                fontSize: 40,
-            }}
-        >
-            {props.step}
+            <pre style={{ fontSize: 10 }}>
+                {JSON.stringify(sequence, null, 4)}
+            </pre>
+            <ReactFlow
+                nodeTypes={customNodes}
+                elements={flow}
+                onConnect={(params) => {
+                    console.log(params)
+                    if (params.sourceHandle === "out") {
+                        setNext(params.source, params.target)
+                    }
+                }}
+            />
         </div>
     )
 }
