@@ -19,7 +19,7 @@ import WebSocket from "ws"
 import fs from "fs"
 
 // Import from config file
-import { wsType, webPort, wsPort, defaultSequence } from "./config.js"
+import { wsType, webPort, wsPort, defaultSequence } from "./src/config.js"
 
 // Setup file to store data
 const dataFile = "./data.csv"
