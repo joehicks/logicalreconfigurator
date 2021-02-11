@@ -19,9 +19,16 @@ for (const proc of allProcesses) {
                 }}
             >
                 {/* In & out handles */}
-                <Handle type="target" id="in" position="left" />
-                <Handle type="source" id="out" position="right" />
-
+                {!proc.start ? (
+                    <Handle type="target" id="in" position="left" />
+                ) : (
+                    ""
+                )}
+                {!proc.end ? (
+                    <Handle type="source" id="out" position="right" />
+                ) : (
+                    ""
+                )}
                 {/* Process title */}
                 <strong>{proc.name}</strong>
 
