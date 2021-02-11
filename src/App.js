@@ -12,7 +12,7 @@ The University of Nottingham
 // Import packages
 import React, { useState, useEffect } from "react"
 import { Helmet, HelmetProvider } from "react-helmet-async"
-import ReactFlow from "react-flow-renderer"
+import ReactFlow, { Controls } from "react-flow-renderer"
 import uniqueId from "./gen-id"
 
 // Import custom React Flow nodes
@@ -146,25 +146,6 @@ const App = () => {
         saveSequence(seq)
     }
 
-    // Remove an instruction
-    const removeInstruction = (id) => {
-        let seq = [...sequence]
-        const index = seq.findIndex((s) => s.id === id)
-        if (index < 0) {
-            return console.log(`No node with id = ${id}`)
-        }
-        seq.splice(index, 1)
-        seq = seq.map((inst) => {
-            if (inst.next === id) inst.next = null
-            inst.arguments = inst.arguments.map((arg) =>
-                arg === id ? null : arg
-            )
-            return inst
-        })
-        setSequence(seq)
-        saveSequence(seq)
-    }
-
     const updatePosition = (id, pos) => {
         const seq = [...sequence]
         const node = seq.find((s) => s.id === id)
@@ -250,25 +231,15 @@ const App = () => {
                 seq.splice(index, 1)
                 seq = seq.map((inst) => {
                     inst.next = inst.next === id ? null : inst.next
-                    inst.arguments = inst.arguments.map(arg => arg === id ? null : arg)
+                    inst.arguments = inst.arguments.map((arg) =>
+                        arg === id ? null : arg
+                    )
                     return inst
                 })
             }
         }
         setSequence(seq)
         saveSequence(seq)
-    }
-
-    const removeElement = (element) => {
-        if (!!element.source && !!element.target) {
-            if (element.sourceHandle === "out") {
-                setNext(element.source, null)
-            } else {
-                updateArg(element.source, parseInt(element.sourceHandle), null)
-            }
-        } else {
-            removeInstruction(element.id)
-        }
     }
 
     // JSX to render App component
@@ -336,7 +307,9 @@ const App = () => {
                     updatePosition(node.id, node.position)
                 }}
                 onSelectionChange={setSelection}
-            />
+            >
+                <Controls/>
+            </ReactFlow>
         </div>
     )
 }
