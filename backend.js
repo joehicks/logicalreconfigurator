@@ -19,7 +19,8 @@ import WebSocket from "ws"
 import fs from "fs"
 
 // Import from config file
-import { wsType, webPort, wsPort } from "./src/config.js"
+import { wsType, webPort, wsPort, defaultSequence } from "./src/config.js"
+import argTypes from "./src/argtypes.js"
 
 // Setup file to store data
 const dataFile = "./data.csv"
@@ -45,7 +46,7 @@ const topics = {
     controlBeckhoff: "ctl_beckhoff",
     processNumbers: "pd_process_numbers",
     recordData: "rec_record_data",
-    updateSequence: "ctl_update_sequence"
+    updateSequence: "ctl_update_sequence",
 }
 
 // Declare an array of the topics to subscribe to
@@ -95,9 +96,14 @@ client.on("message", function (topic, message) {
             // Ingest data from packet
             const barcode = message.toString("utf-8", 0, 8)
             const depth = message.readUInt32LE(8)
-            console.log(`Saving depth reading of ${depth} for barcode: ${barcode}`)
+            console.log(
+                `Saving depth reading of ${depth} for barcode: ${barcode}`
+            )
             // Add to the data file
-            fs.appendFileSync("./data.csv", `${new Date().toISOString()},${barcode},${depth}\n`)
+            fs.appendFileSync(
+                "./data.csv",
+                `${new Date().toISOString()},${barcode},${depth}\n`
+            )
             break
         default:
             break
@@ -133,6 +139,21 @@ app.get("/prog", (req, res) => {
 })
 
 //
+// Maintaining sequence in memory and on disk
+//
+
+let sequence = defaultSequence || []
+
+if (fs.existsSync("./sequence.json")) {
+    try {
+        const diskSeq = JSON.parse("./sequence.json")
+        sequence = diskSeq
+    } catch (e) {}
+}
+
+console.log(sequence)
+
+//
 // Websocket server - realtime communication with interface
 //
 
@@ -150,11 +171,36 @@ const createMessage = (type, data) =>
 
 // Run when a new Websocket connection is established
 wss.on("connection", (ws) => {
-    // Send an update packet with the current process ID & step
+    // Send the sequence
     ws.send(
-        createMessage(wsType.UPDATE, {
-            process: process,
-            step: step,
+        createMessage(wsType.NODEUPDATE, {
+            sequence: sequence,
         })
     )
+
+    // Handle incoming messages
+    ws.on("message", (message) => {
+        // Attempt to parse message as JSON
+        try {
+            message = JSON.parse(message)
+        } catch (e) {
+            return console.log(
+                "Garbled message received:",
+                message,
+                " | Could not parse JSON | ",
+                e
+            )
+        }
+        // Handle message based on type
+        switch (message.type) {
+            case argTypes.SAVENODES:
+                if (!!message.sequence) {
+                    sequence = message.sequence
+                    fs.writeFileSync("./sequence.json", JSON.stringify(message.sequence))
+                }
+                break
+            default:
+                break
+        }
+    })
 })
