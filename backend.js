@@ -151,8 +151,6 @@ if (fs.existsSync("./sequence.json")) {
     } catch (e) {}
 }
 
-console.log(sequence)
-
 //
 // Websocket server - realtime communication with interface
 //
