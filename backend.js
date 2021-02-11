@@ -67,6 +67,7 @@ client.on("connect", function () {
 let process = 0
 let step = 0
 
+// Function to build a message to send over WS
 const createMessage = (type, data) =>
     JSON.stringify({
         type: type,
