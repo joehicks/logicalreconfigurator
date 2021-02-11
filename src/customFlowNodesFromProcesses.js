@@ -9,9 +9,15 @@ const customNodes = {}
 // Iterate through all processes in the process.js config file
 for (const proc of allProcesses) {
     // Create a custom node element
-    const node = ({ data }) => {
+    const node = ({ data, selected }) => {
         return (
-            <div style={{padding: "1rem", border: "1px solid black"}}>
+            <div
+                style={{
+                    padding: "1rem",
+                    border: `${selected ? "3" : "1"}px solid black`,
+                    backgroundColor: "white",
+                }}
+            >
                 {/* In & out handles */}
                 <Handle type="target" id="in" position="left" />
                 <Handle type="source" id="out" position="right" />

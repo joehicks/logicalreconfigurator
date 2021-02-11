@@ -21,43 +21,72 @@ import customNodes from "./customFlowNodesFromProcesses"
 // Import argument types
 import argTypes from "./argtypes"
 
-// Import process details from config
+// Import process details etc. from config
 import { processes, allProcesses } from "./process"
-
-// TESTING: Initial instructions
-// TODO: Startup process
-// TODO: Maintain this data in backend server
-const instructions = [
-    {
-        id: "INST00000001",
-        process: 1,
-        arguments: [],
-        next: null,
-        position: {
-            x: 100,
-            y: 100,
-        },
-    },
-    {
-        id: "INST00000020",
-        process: 0,
-        arguments: [],
-        next: null,
-        position: {
-            x: 100,
-            y: 100,
-        },
-    },
-]
+import { wsType } from "./config"
 
 // Declare the App component
 const App = () => {
     // State to hold the sequence array
-    const [sequence, setSequence] = useState(instructions)
+    const [sequence, setSequence] = useState([])
+
     // State to hold the array that drives React Flow
     const [flow, setFlow] = useState([])
 
+    //
+    // Websocket handling
+    //
+
+    // State to hold WebSocket connection
+    const [ws, setWs] = useState(null)
+
+    // Function to save latest sequence to server
+    const saveSequence = (seq) => {
+        seq = seq || sequence
+        ws.send(
+            JSON.stringify({
+                type: wsType.SAVENODES,
+                sequence: seq,
+            })
+        )
+    }
+
+    // On load, instatiate WebSocket connection
+    useEffect(() => {
+        // Create WS connection
+        const newWs = new WebSocket(`ws://${window.location.host}/ws`)
+        // Handle incoming messages
+        newWs.addEventListener("message", function (event) {
+            let message = {}
+            // Read as JSON, handle errors
+            try {
+                message = JSON.parse(event.data)
+            } catch (e) {
+                return console.log(
+                    "Garbled message received:",
+                    message,
+                    " | Could not parse JSON | ",
+                    e
+                )
+            }
+            // Act depending on message type
+            switch (message.type) {
+                case wsType.NODEUPDATE:
+                    if (!message.sequence) return
+                    setSequence(message.sequence)
+                    break
+                default:
+                    break
+            }
+        })
+        // Store this websocket connection to state
+        setWs(newWs)
+    }, [])
+
+    //
     // Functions to modify sequence array state
+    //
+
     // Update an argument
     const updateArg = (id, arg, value) => {
         const seq = [...sequence]
@@ -74,6 +103,7 @@ const App = () => {
         node.arguments[arg] = value
 
         setSequence(seq)
+        saveSequence(seq)
     }
 
     // Retrieve an argument
@@ -100,6 +130,7 @@ const App = () => {
         }
         node.next = next
         setSequence(seq)
+        saveSequence(seq)
     }
 
     // Add a new instruction
@@ -112,6 +143,37 @@ const App = () => {
             process: id,
         })
         setSequence(seq)
+        saveSequence(seq)
+    }
+
+    // Remove an instruction
+    const removeInstruction = (id) => {
+        let seq = [...sequence]
+        const index = seq.findIndex((s) => s.id === id)
+        if (index < 0) {
+            return console.log(`No node with id = ${id}`)
+        }
+        seq.splice(index, 1)
+        seq = seq.map((inst) => {
+            if (inst.next === id) inst.next = null
+            inst.arguments = inst.arguments.map((arg) =>
+                arg === id ? null : arg
+            )
+            return inst
+        })
+        setSequence(seq)
+        saveSequence(seq)
+    }
+
+    const updatePosition = (id, pos) => {
+        const seq = [...sequence]
+        const node = seq.find((s) => s.id === id)
+        if (!node) {
+            return console.log(`No node with id = ${id}`)
+        }
+        node.position = pos
+        setSequence(seq)
+        saveSequence(seq)
     }
 
     // Runs every time the sequence array state changes to update the flow state
@@ -126,11 +188,15 @@ const App = () => {
                 id: s.id,
             },
             // TODO: Smarter positioning
-            position: { x: 100, y: 100 },
+            position: s.position || { x: 100, y: 100 },
         }))
 
         // Extract edges from the sequence array
         const edges = []
+
+        // Style for edges
+        const edgeStyle = {}
+
         for (const s of sequence) {
             // Pull expected arguments for each instructions
             const procArgs = processes(s.process).arguments
@@ -145,6 +211,7 @@ const App = () => {
                         sourceHandle: `${i}`,
                         target: s.arguments[i],
                         targetHandle: "in",
+                        style: edgeStyle,
                     })
                 }
             }
@@ -159,12 +226,50 @@ const App = () => {
                 sourceHandle: "out",
                 target: s.next,
                 targetHandle: "in",
+                style: edgeStyle,
             })
         }
         // Update the state
         setFlow([...nodes, ...edges])
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [sequence])
+
+    // Handling selection and removal of nodes & edges
+    const [selection, setSelection] = useState([])
+
+    const removeSelection = () => {
+        let seq = [...sequence]
+        for (const sel of selection) {
+            if (!!sel.source && !!sel.target) {
+            } else {
+                const id = sel.id
+                const index = seq.findIndex((s) => s.id === id)
+                if (index < 0) {
+                    return console.log(`No node with id = ${id}`)
+                }
+                seq.splice(index, 1)
+                seq = seq.map((inst) => {
+                    inst.next = inst.next === id ? null : inst.next
+                    inst.arguments = inst.arguments.map(arg => arg === id ? null : arg)
+                    return inst
+                })
+            }
+        }
+        setSequence(seq)
+        saveSequence(seq)
+    }
+
+    const removeElement = (element) => {
+        if (!!element.source && !!element.target) {
+            if (element.sourceHandle === "out") {
+                setNext(element.source, null)
+            } else {
+                updateArg(element.source, parseInt(element.sourceHandle), null)
+            }
+        } else {
+            removeInstruction(element.id)
+        }
+    }
 
     // JSX to render App component
     return (
@@ -206,6 +311,7 @@ const App = () => {
                             {p.name}
                         </div>
                     ))}
+                <div onClick={() => removeSelection()}>DELETE</div>
             </div>
 
             {/* React Flow element */}
@@ -226,8 +332,10 @@ const App = () => {
                         )
                     }
                 }}
-
-                // TODO: Remove nodes/edges
+                onNodeDragStop={(e, node) => {
+                    updatePosition(node.id, node.position)
+                }}
+                onSelectionChange={setSelection}
             />
         </div>
     )

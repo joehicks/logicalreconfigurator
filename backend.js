@@ -146,7 +146,7 @@ let sequence = defaultSequence || []
 
 if (fs.existsSync("./sequence.json")) {
     try {
-        const diskSeq = JSON.parse("./sequence.json")
+        const diskSeq = JSON.parse(fs.readFileSync("./sequence.json"))
         sequence = diskSeq
     } catch (e) {}
 }
@@ -176,6 +176,8 @@ wss.on("connection", (ws) => {
         })
     )
 
+    console.log("New WS connection")
+
     // Handle incoming messages
     ws.on("message", (message) => {
         // Attempt to parse message as JSON
@@ -189,12 +191,24 @@ wss.on("connection", (ws) => {
                 e
             )
         }
+        console.log("New WS message:", message.type)
         // Handle message based on type
         switch (message.type) {
-            case argTypes.SAVENODES:
+            case wsType.SAVENODES:
                 if (!!message.sequence) {
                     sequence = message.sequence
-                    fs.writeFileSync("./sequence.json", JSON.stringify(message.sequence))
+                    const seqUpdateMessage = createMessage(wsType.NODEUPDATE, {
+                        sequence: sequence,
+                    })
+                    wss.clients.forEach((client) => {
+                        if (client.readyState === WebSocket.OPEN) {
+                            client.send(seqUpdateMessage)
+                        }
+                    })
+                    fs.writeFileSync(
+                        "./sequence.json",
+                        JSON.stringify(sequence)
+                    )
                 }
                 break
             default:
