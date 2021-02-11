@@ -6,6 +6,9 @@
     "@testing-library/jest-dom": "^5.11.6",
     "@testing-library/react": "^11.2.2",
     "@testing-library/user-event": "^12.6.0",
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.3",
+    "babel-preset-es2015": "^6.24.1",
     "express": "^4.17.1",
     "mqtt": "^4.2.6",
     "react": "^17.0.1",
@@ -21,7 +24,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "transpile": "babel ./src -o bin"
   },
   "eslintConfig": {
     "extends": [
@@ -41,5 +45,8 @@
       "last 1 safari version"
     ]
   },
-  "type": "module"
+  "type": "module",
+  "babel": {
+    "presets": ["@babel/preset-env"]
+  }
 }
