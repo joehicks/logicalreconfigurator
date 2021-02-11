@@ -29,6 +29,18 @@ const processList = [
         sets: 0b000000,
         clears: 0b000000,
         arguments: [],
+        end: true
+    },
+    {
+        id: 127,
+        name: "Process start",
+        steps: [],
+        needs: 0b000000,
+        procludes: 0b000000,
+        sets: 0b000000,
+        clears: 0b000000,
+        arguments: [],
+        start: true
     },
     {
         id: 1,
