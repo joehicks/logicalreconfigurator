@@ -23,7 +23,7 @@ const defaultSequence = [
         arguments: [],
         next: null,
         position: {
-            x: 200,
+            x: 300,
             y: 100,
         },
     },
