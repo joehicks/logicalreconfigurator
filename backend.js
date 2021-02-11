@@ -67,13 +67,6 @@ client.on("connect", function () {
 let process = 0
 let step = 0
 
-// Function to build a message to send over WS
-const createMessage = (type, data) =>
-    JSON.stringify({
-        type: type,
-        ...data,
-    })
-
 // Handle incoming messages
 client.on("message", function (topic, message) {
     // Decide what to do based on the received topic
@@ -147,6 +140,13 @@ app.get("/prog", (req, res) => {
 const wss = new WebSocket.Server({
     port: wsPort,
 })
+
+// Function to build a message to send over WS
+const createMessage = (type, data) =>
+    JSON.stringify({
+        type: type,
+        ...data,
+    })
 
 // Run when a new Websocket connection is established
 wss.on("connection", (ws) => {
