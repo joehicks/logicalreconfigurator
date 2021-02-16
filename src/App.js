@@ -54,7 +54,7 @@ const App = () => {
     // On load, instatiate WebSocket connection
     useEffect(() => {
         // Create WS connection
-        const newWs = new WebSocket(`ws://${window.location.host}/ws`)
+        const newWs = new WebSocket(`${window.location.protocol.replace(/http/, "ws")}//${window.location.host}/ws`)
         // Handle incoming messages
         newWs.addEventListener("message", function (event) {
             let message = {}
@@ -282,7 +282,7 @@ const App = () => {
                             {p.name}
                         </div>
                     ))}
-                <div onClick={() => removeSelection()}>DELETE</div>
+                    <div onClick={() => removeSelection()}>DELETE</div>
             </div>
 
             {/* React Flow element */}
