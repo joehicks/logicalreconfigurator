@@ -14,6 +14,7 @@ import React, { useState, useEffect } from "react"
 import { Helmet, HelmetProvider } from "react-helmet-async"
 import ReactFlow, { Controls } from "react-flow-renderer"
 import uniqueId from "./gen-id"
+import compile from "./compile"
 
 // Import custom React Flow nodes
 import customNodes from "./customFlowNodesFromProcesses"
@@ -32,6 +33,9 @@ const App = () => {
 
     // State to hold the array that drives React Flow
     const [flow, setFlow] = useState([])
+
+    // State to hold compilation validity
+    const [compilable, setCompilable] = useState(false)
 
     //
     // Websocket handling
@@ -54,7 +58,12 @@ const App = () => {
     // On load, instatiate WebSocket connection
     useEffect(() => {
         // Create WS connection
-        const newWs = new WebSocket(`${window.location.protocol.replace(/http/, "ws")}//${window.location.host}/ws`)
+        const newWs = new WebSocket(
+            `${window.location.protocol.replace(
+                /http/,
+                "ws"
+            )}//${window.location.host.replace(/:\d+$/, ":44202")}/ws`
+        )
         // Handle incoming messages
         newWs.addEventListener("message", function (event) {
             let message = {}
@@ -157,7 +166,7 @@ const App = () => {
         saveSequence(seq)
     }
 
-    // Runs every time the sequence array state changes to update the flow state
+    // Runs every time the sequence array state changes to update the flow state and check compilability
     useEffect(() => {
         // Convert the sequence array into an array of nodes
         const nodes = sequence.map((s) => ({
@@ -212,6 +221,14 @@ const App = () => {
         }
         // Update the state
         setFlow([...nodes, ...edges])
+
+        // Run a compilation and set the compilable and maps state
+        const compiled = compile(sequence, false, true)
+        setCompilable(!!compiled)
+        if (!!compiled) {
+            console.log(compiled.seq)
+           // setMap(compiled.map)
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [sequence])
 
@@ -282,7 +299,24 @@ const App = () => {
                             {p.name}
                         </div>
                     ))}
-                    <div onClick={() => removeSelection()}>DELETE</div>
+                <div onClick={() => removeSelection()}>DELETE</div>
+                <div
+                    style={{
+                        color: compilable ? "inherit" : "red",
+                    }}
+                    onClick={() => {
+                        if (!compile(sequence, true)) return
+                        fetch("/newprog", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify(sequence)
+                        })
+                    }}
+                >
+                    COMPILE
+                </div>
             </div>
 
             {/* React Flow element */}
@@ -308,7 +342,7 @@ const App = () => {
                 }}
                 onSelectionChange={setSelection}
             >
-                <Controls/>
+                <Controls />
             </ReactFlow>
         </div>
     )
