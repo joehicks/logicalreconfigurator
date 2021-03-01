@@ -3,7 +3,8 @@ const wsPort = 44202
 const wsType = {
     UPDATE: "update",
     SAVENODES: "savenodes",
-    NODEUPDATE: "nodeupdate"
+    NODEUPDATE: "nodeupdate",
+    OFFSETUPDATE: "offsetupdate"
 }
 
 const defaultSequence = [
