@@ -48,5 +48,6 @@
   "type": "module",
   "babel": {
     "presets": ["@babel/preset-env"]
-  }
+  },
+  "proxy": "http://localhost:44201"
 }
