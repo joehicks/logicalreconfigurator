@@ -17,6 +17,7 @@ import mqtt from "mqtt"
 import express from "express"
 import WebSocket from "ws"
 import fs from "fs"
+import compile from "./src/compile.js"
 
 // Import from config file
 import { wsType, webPort, wsPort, defaultSequence } from "./src/config.js"
@@ -66,6 +67,7 @@ client.on("connect", function () {
 // Variables to hold process data
 let process = 0
 let step = 0
+let offset = 0
 
 // Handle incoming messages
 client.on("message", function (topic, message) {
@@ -75,9 +77,10 @@ client.on("message", function (topic, message) {
             console.log(`Depth reported: ${message.readUInt32LE()}`)
             break
         case topics.processNumbers:
-            process = message.readInt16LE(0)
-            step = message.readInt16LE(2)
-
+            process = message.readInt8(0)
+            step = message.readInt16BE(1)
+            offset = message.readUInt16BE(3)
+            console.log(process, step, offset)
             wss.clients.forEach((client) => {
                 client.send(
                     createMessage(wsType.UPDATE, {
@@ -119,6 +122,9 @@ const app = express()
 // Serve production React app
 app.use(express.static("./build"))
 
+// Parse JSON bodies
+app.use(express.json())
+
 app.listen(webPort, () => {
     console.log(`Backend server up on port ${webPort}`)
 })
@@ -134,6 +140,13 @@ app.get("/prog", (req, res) => {
     const prog = fs.readFileSync("./newprog.hex")
     client.publish(topics.updateSequence, prog)
     console.log(prog)
+    res.send("ok")
+})
+
+app.post("/newprog", (req, res) => {
+    const compiled = compile(req.body)
+    console.log(compiled)
+    client.publish(topics.updateSequence, compiled)
     res.send("ok")
 })
 
