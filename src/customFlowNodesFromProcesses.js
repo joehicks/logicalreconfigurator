@@ -26,7 +26,7 @@ for (const proc of allProcesses) {
                 style={{
                     padding: "1rem",
                     border: invalid ? "4px solid #ddd" : `${selected ? "3" : "1"}px solid black`,
-                    backgroundColor: "white",
+                    backgroundColor: selected ? "#eee" : "white",
                     color: invalid ? "#888" : "inherit"
                 }}
             >
