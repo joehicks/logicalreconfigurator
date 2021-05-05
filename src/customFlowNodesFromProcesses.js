@@ -25,13 +25,18 @@ for (const proc of allProcesses) {
             <div
                 style={{
                     padding: "1rem",
-                    border: invalid ? "4px solid red" : `${selected ? "3" : "1"}px solid black`,
+                    border: invalid ? "4px solid #ddd" : `${selected ? "3" : "1"}px solid black`,
                     backgroundColor: "white",
+                    color: invalid ? "#ddd" : "inherit"
                 }}
             >
                 {/* In & out handles */}
                 {!proc.start ? (
-                    <Handle type="target" id="in" position="left"/>
+                    <Handle type="target" id="in" position="left" style={invalid ? 
+                        {display: "grid", placeItems: "center", cursor: "not-allowed"} :
+                    {}}>
+                        {invalid ? <img src="no.svg" style={{margin: "-0.5rem", height: "1rem"}}/> : ""}
+                    </Handle>
                 ) : (
                     ""
                 )}
@@ -42,7 +47,7 @@ for (const proc of allProcesses) {
                 )}
                 {/* Process title */}
                 <strong>{proc.name}</strong>
-                <div>{!invalid ? "" : <div style={{color: "red"}}>
+                <div>{!invalid ? "" : <div style={{color: "#666"}}>
                         {invalid ? <div style={{fontWeight: "bold"}}>
                             Cannot connect to this block, precedence condition unmet:
                         </div>: ""}
