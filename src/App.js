@@ -14,7 +14,6 @@ import React, { useState, useEffect } from "react"
 import { Helmet, HelmetProvider } from "react-helmet-async"
 import ReactFlow, { Controls, MiniMap } from "react-flow-renderer"
 import uniqueId from "./gen-id"
-import compile from "./compile"
 
 // Import custom React Flow nodes
 import customNodes from "./customFlowNodesFromProcesses"
@@ -24,7 +23,6 @@ import argTypes from "./argtypes"
 
 // Import process details etc. from config
 import { processes, allProcesses } from "./process"
-import { wsType } from "./config"
 
 // Declare the App component
 const App = () => {
@@ -34,62 +32,16 @@ const App = () => {
     // State to hold the array that drives React Flow
     const [flow, setFlow] = useState([])
 
-    // State to hold compilation validity
-    const [compilable, setCompilable] = useState(false)
-
-    //
-    // Websocket handling
-    //
-
-    // State to hold WebSocket connection
-    const [ws, setWs] = useState(null)
-
     // Function to save latest sequence to server
     const saveSequence = (seq) => {
-        seq = seq || sequence
-        ws.send(
-            JSON.stringify({
-                type: wsType.SAVENODES,
-                sequence: seq,
-            })
-        )
+        console.log("Sequence server syncronisation disabled for demo")
     }
 
-    // On load, instatiate WebSocket connection
+    // On load, downlaod static configuration from server
     useEffect(() => {
-        // Create WS connection
-        const newWs = new WebSocket(
-            `${window.location.protocol.replace(
-                /http/,
-                "ws"
-            )}//${window.location.host.replace(/:\d+$/, ":44202")}/ws`
-        )
-        // Handle incoming messages
-        newWs.addEventListener("message", function (event) {
-            let message = {}
-            // Read as JSON, handle errors
-            try {
-                message = JSON.parse(event.data)
-            } catch (e) {
-                return console.log(
-                    "Garbled message received:",
-                    message,
-                    " | Could not parse JSON | ",
-                    e
-                )
-            }
-            // Act depending on message type
-            switch (message.type) {
-                case wsType.NODEUPDATE:
-                    if (!message.sequence) return
-                    setSequence(message.sequence)
-                    break
-                default:
-                    break
-            }
-        })
-        // Store this websocket connection to state
-        setWs(newWs)
+        fetch("/sequencestatic.json")
+            .then((r) => r.json())
+            .then((j) => setSequence(j))
     }, [])
 
     //
@@ -262,7 +214,6 @@ const App = () => {
         // Run a compilation and set the compilable and maps state
         // TODO: Re-enable compilation
         // const compiled = compile(sequence, false, true)
-        setCompilable(true)
         // if (!!compiled) {
         //     //console.log(compiled.seq)
         //    // setMap(compiled.map)
@@ -370,6 +321,7 @@ const App = () => {
                             textDecoration: "underline",
                             cursor: "pointer",
                             fontSize: "1.5rem",
+                            padding: "0.5 rem"
                         }}
                         onClick={() => removeSelection()}
                     >
@@ -378,22 +330,11 @@ const App = () => {
                 ) : (
                     ""
                 )}
-                <div
-                    style={{
-                        color: compilable ? "inherit" : "red",
-                    }}
-                    onClick={() => {
-                        if (!compile(sequence, true)) return
-                        fetch("/newprog", {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                            },
-                            body: JSON.stringify(sequence),
-                        })
-                    }}
-                >
-                    COMPILE
+                <div style={{margin:"1rem"}}>
+                    Demonstration version of Logical Reconfigurator<br/><br/>
+                    This demonstration will not modify any actual equipment, feel free to play around,<br/><br/>
+                    In the real version the recipe synchronises with a server, this has been disabled for clarity of demonstration.<br/><br/>
+                    - Joe Hicks
                 </div>
             </div>
 
