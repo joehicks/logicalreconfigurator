@@ -329,6 +329,7 @@ const App = () => {
                     zIndex: 100,
                     padding: "1rem",
                     gridArea: "sidebar",
+                    overflowY: "scroll",
                 }}
             >
                 <strong>SMC HAS-205</strong>
@@ -458,7 +459,7 @@ const App = () => {
                     ""
                 )}
                 <Controls />
-                <MiniMap />
+                <MiniMap nodeColor={"#666"} maskColor={"#777"} />
             </ReactFlow>
         </div>
     )
