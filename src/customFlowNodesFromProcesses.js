@@ -12,9 +12,6 @@ for (const proc of allProcesses) {
     // Create a custom node element
     const node = ({ data, selected }) => {
         let invalid = false
-        let needs = []
-        let precludes = []
-
         let unmet = []
 
         if (data.draggingPrecedence.dragging && data.draggingPrecedence.id !== data.id) {
@@ -52,8 +49,6 @@ for (const proc of allProcesses) {
                             Cannot connect to this block, precedence condition unmet:
                         </div>: ""}
                         {[...unmet].map(un => <div>{un}</div>)}
-                        {[...needs].map(e => <div>{precedenceDescriptions.needs[e]}</div>)}
-                        {[...precludes].map(e => <div>{precedenceDescriptions.precludes[e]}</div>)}
                     </div>
                 }</div>
                 {/* Render argument appropriately */}
