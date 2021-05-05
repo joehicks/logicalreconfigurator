@@ -209,7 +209,7 @@ const processList = [
         id: 102,
         name: "Jump if barcode matches",
         steps: [],
-        needs: 0b000001,
+        needs: 0b010000,
         precludes: 0b000000,
         sets: 0b000000,
         clears: 0b000000,
