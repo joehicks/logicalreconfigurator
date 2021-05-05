@@ -12,7 +12,7 @@ The University of Nottingham
 // Import packages
 import React, { useState, useEffect } from "react"
 import { Helmet, HelmetProvider } from "react-helmet-async"
-import ReactFlow, { Controls } from "react-flow-renderer"
+import ReactFlow, { Controls, MiniMap } from "react-flow-renderer"
 import uniqueId from "./gen-id"
 import compile from "./compile"
 
@@ -306,6 +306,9 @@ const App = () => {
                 left: 0,
                 right: 0,
                 bottom: 0,
+                display: "grid",
+                gridTemplateAreas: "'flow sidebar'",
+                gridTemplateColumns: "4fr 1fr"
             }}
         >
             {/* Change tab title */}
@@ -316,13 +319,14 @@ const App = () => {
             {/* Sidebar */}
             <div
                 style={{
-                    position: "fixed",
-                    top: 0,
-                    right: 0,
-                    bottom: 0,
+                    // position: "fixed",
+                    // top: 0,
+                    // right: 0,
+                    // bottom: 0,
                     backgroundColor: "#eeeeee",
                     zIndex: 100,
                     padding: "1rem",
+                    gridArea: "sidebar"
                 }}
             >
                 <strong>SMC HAS-205</strong><br/>
@@ -378,6 +382,7 @@ const App = () => {
 
             {/* React Flow element */}
             <ReactFlow
+            style={{gridArea: "flow"}}
                 // Use custom nodes
                 nodeTypes={customNodes}
                 // Populate with elements in the flow state
@@ -430,6 +435,7 @@ const App = () => {
                     </div> : ""
                 }
                 <Controls />
+                <MiniMap />
             </ReactFlow>
         </div>
     )
