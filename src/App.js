@@ -169,9 +169,8 @@ const App = () => {
     const [draggingPrecedence, setDraggingPrecedence] = useState({
         dragging: false,
         precedence: 0,
-        id: ""
+        id: "",
     })
-
 
     // Runs every time the sequence array state changes to update the flow state and check compilability
     useEffect(() => {
@@ -187,10 +186,10 @@ const App = () => {
                 seq: s,
                 exits: [],
                 proc: processes(s.process),
-                draggingPrecedence: draggingPrecedence
+                draggingPrecedence: draggingPrecedence,
             },
             // TODO: Smarter positioning
-            position: s.position || { x: 100, y: 100 }
+            position: s.position || { x: 100, y: 100 },
         }))
 
         // Extract edges from the sequence array
@@ -243,8 +242,11 @@ const App = () => {
             for (const n of nodes) {
                 for (const prec of n.data.precedence) {
                     for (const exit of n.data.exits) {
-                        const newPrec = (prec | n.data.proc.sets) & ~n.data.proc.clears & 0b111111
-                        const destination = nodes.find(n => n.id === exit)
+                        const newPrec =
+                            (prec | n.data.proc.sets) &
+                            ~n.data.proc.clears &
+                            0b111111
+                        const destination = nodes.find((n) => n.id === exit)
                         if (!destination.data.precedence.includes(newPrec)) {
                             destination.data.precedence.push(newPrec)
                             changesMade = true
@@ -308,7 +310,7 @@ const App = () => {
                 bottom: 0,
                 display: "grid",
                 gridTemplateAreas: "'flow sidebar'",
-                gridTemplateColumns: "4fr 1fr"
+                gridTemplateColumns: "4fr 1fr",
             }}
         >
             {/* Change tab title */}
@@ -326,17 +328,26 @@ const App = () => {
                     backgroundColor: "#eeeeee",
                     zIndex: 100,
                     padding: "1rem",
-                    gridArea: "sidebar"
+                    gridArea: "sidebar",
                 }}
             >
-                <strong>SMC HAS-205</strong><br/>
-                <em>B12 Robotics Lab<br/>Advanced Manufacturing Building<br/>Jubilee Campus<br/>University of Nottingham</em>
-                
+                <strong>SMC HAS-205</strong>
+                <br />
+                <em>
+                    B12 Robotics Lab
+                    <br />
+                    Advanced Manufacturing Building
+                    <br />
+                    Jubilee Campus
+                    <br />
+                    University of Nottingham
+                </em>
+
                 <h2>Available Processes</h2>
                 {/* Build from processes */}
                 {allProcesses
                     .filter((p) => !p.hide)
-                    .filter(p => p.id !== 0 & p.id !== 127)
+                    .filter((p) => (p.id !== 0) & (p.id !== 127))
                     .map((p, i) => (
                         <div
                             key={`processlist${i}`}
@@ -346,21 +357,26 @@ const App = () => {
                                 padding: "0.5rem",
                                 backgroundColor: "#ffffff",
                                 border: "1px solid black",
-                                cursor: "pointer"
+                                cursor: "pointer",
                             }}
                         >
                             {p.name}
                         </div>
                     ))}
-                    {
-                        (selection || []).length > 0 ? 
-                        <div style={{
+                {(selection || []).length > 0 ? (
+                    <div
+                        style={{
                             textDecoration: "underline",
                             cursor: "pointer",
-                            fontSize: "1.5rem"
-                        }} onClick={() => removeSelection()}>DELETE SELECTED BLOCK</div> :
-                        ""
-                    }
+                            fontSize: "1.5rem",
+                        }}
+                        onClick={() => removeSelection()}
+                    >
+                        DELETE SELECTED BLOCK
+                    </div>
+                ) : (
+                    ""
+                )}
                 <div
                     style={{
                         color: compilable ? "inherit" : "red",
@@ -372,7 +388,7 @@ const App = () => {
                             headers: {
                                 "Content-Type": "application/json",
                             },
-                            body: JSON.stringify(sequence)
+                            body: JSON.stringify(sequence),
                         })
                     }}
                 >
@@ -382,7 +398,7 @@ const App = () => {
 
             {/* React Flow element */}
             <ReactFlow
-            style={{gridArea: "flow"}}
+                style={{ gridArea: "flow" }}
                 // Use custom nodes
                 nodeTypes={customNodes}
                 // Populate with elements in the flow state
@@ -404,36 +420,43 @@ const App = () => {
                 }}
                 // Validation of connectability
                 onConnectStart={(event, { nodeId, handleType }) => {
-                    const n = flow.find(n => n.id === nodeId)
+                    const n = flow.find((n) => n.id === nodeId)
                     setDraggingPrecedence({
                         dragging: true,
-                        precedence: n.data.precedence
-                            .map(p => {
-                                return (p | n.data.proc.sets) & ~n.data.proc.clears & 0b111111
-                            }),
-                        id: n.id
+                        precedence: n.data.precedence.map((p) => {
+                            return (
+                                (p | n.data.proc.sets) &
+                                ~n.data.proc.clears &
+                                0b111111
+                            )
+                        }),
+                        id: n.id,
                     })
                 }}
                 onConnectStop={(event) => {
                     setDraggingPrecedence({
                         dragging: false,
                         precedence: 0,
-                        id: ""
+                        id: "",
                     })
-                console.log("connect stop")
+                    console.log("connect stop")
                 }}
                 onSelectionChange={setSelection}
             >
-                {
-                    draggingPrecedence.dragging && draggingPrecedence.precedence.length === 0 ? 
-                    <div style={{
-                        padding: "1rem",
-                        fontSize: "2rem",
-                        color: "red"
-                    }}>
+                {draggingPrecedence.dragging &&
+                draggingPrecedence.precedence.length === 0 ? (
+                    <div
+                        style={{
+                            padding: "1rem",
+                            fontSize: "2rem",
+                            color: "red",
+                        }}
+                    >
                         Precedence guidance unavailable for orphan blocks
-                    </div> : ""
-                }
+                    </div>
+                ) : (
+                    ""
+                )}
                 <Controls />
                 <MiniMap />
             </ReactFlow>

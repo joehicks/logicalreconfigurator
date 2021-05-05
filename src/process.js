@@ -14,9 +14,7 @@ import argTypes from "./argtypes.js"
 const unknown = {
     id: -1,
     name: "Undefined process",
-    steps: [
-        "Undefined"
-    ]
+    steps: ["Undefined"],
 }
 
 const processList = [
@@ -29,7 +27,7 @@ const processList = [
         sets: 0b000000,
         clears: 0b000000,
         arguments: [],
-        end: true
+        end: true,
     },
     {
         id: 127,
@@ -40,7 +38,7 @@ const processList = [
         sets: 0b000000,
         clears: 0b000000,
         arguments: [],
-        start: true
+        start: true,
     },
     {
         id: 1,
@@ -224,7 +222,7 @@ const processList = [
             buf.writeInt16BE(to, 11)
             return buf
         },
-    }
+    },
 ]
 
 export const precedenceDescriptions = {
@@ -234,7 +232,7 @@ export const precedenceDescriptions = {
         "Needs a part in the entry stop",
         "Needs a part in the test prestop",
         "Needs a part in the test position",
-        "Needs a depth measurement stored"
+        "Needs a depth measurement stored",
     ],
     precludes: [
         "Cannot perform this operation without readiness to ingest part",
@@ -242,8 +240,8 @@ export const precedenceDescriptions = {
         "Cannot perform this operation with a part in the entry stop",
         "Cannot perform this operation with a part in the test prestop",
         "Cannot perform this operation with a part in the test position",
-        "Cannot perform this operation with a depth measurement stored"
-    ]
+        "Cannot perform this operation with a depth measurement stored",
+    ],
 }
 
 const defaultConstructor = (id) => () => Buffer.from([id, 2])
@@ -254,7 +252,7 @@ export const allProcesses = processList
 // Export a processes function
 export const processes = (id) => {
     // Locate the process with the correct ID
-    const result = processList.find(p => p.id === id)
+    const result = processList.find((p) => p.id === id)
 
     // If no constructor or length use default
     if (!!result && !result.construct) {

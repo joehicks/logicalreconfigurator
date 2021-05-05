@@ -14,25 +14,52 @@ for (const proc of allProcesses) {
         let invalid = false
         let unmet = []
 
-        if (data.draggingPrecedence.dragging && data.draggingPrecedence.id !== data.id) {
-            unmet = checkPrecedenceIntoProcess(data.draggingPrecedence.precedence, data.proc)
+        if (
+            data.draggingPrecedence.dragging &&
+            data.draggingPrecedence.id !== data.id
+        ) {
+            unmet = checkPrecedenceIntoProcess(
+                data.draggingPrecedence.precedence,
+                data.proc
+            )
             invalid = unmet.length > 0
         }
         return (
             <div
                 style={{
                     padding: "1rem",
-                    border: invalid ? "4px solid #ddd" : `${selected ? "3" : "1"}px solid black`,
+                    border: invalid
+                        ? "4px solid #ddd"
+                        : `${selected ? "3" : "1"}px solid black`,
                     backgroundColor: selected ? "#eee" : "white",
-                    color: invalid ? "#888" : "inherit"
+                    color: invalid ? "#888" : "inherit",
                 }}
             >
                 {/* In & out handles */}
                 {!proc.start ? (
-                    <Handle type="target" id="in" position="left" style={invalid ? 
-                        {display: "grid", placeItems: "center", cursor: "not-allowed"} :
-                    {}}>
-                        {invalid ? <img src="no.svg" alt="Cannot connect to this node" style={{margin: "-0.5rem", height: "1rem"}}/> : ""}
+                    <Handle
+                        type="target"
+                        id="in"
+                        position="left"
+                        style={
+                            invalid
+                                ? {
+                                      display: "grid",
+                                      placeItems: "center",
+                                      cursor: "not-allowed",
+                                  }
+                                : {}
+                        }
+                    >
+                        {invalid ? (
+                            <img
+                                src="no.svg"
+                                alt="Cannot connect to this node"
+                                style={{ margin: "-0.5rem", height: "1rem" }}
+                            />
+                        ) : (
+                            ""
+                        )}
                     </Handle>
                 ) : (
                     ""
@@ -44,13 +71,25 @@ for (const proc of allProcesses) {
                 )}
                 {/* Process title */}
                 <strong>{proc.name}</strong>
-                <div>{!invalid ? "" : <div style={{color: "#666"}}>
-                        {invalid ? <div style={{fontWeight: "bold"}}>
-                            Cannot connect to this block, precedence condition unmet:
-                        </div>: ""}
-                        {[...unmet].map(un => <div>{un}</div>)}
-                    </div>
-                }</div>
+                <div>
+                    {!invalid ? (
+                        ""
+                    ) : (
+                        <div style={{ color: "#666" }}>
+                            {invalid ? (
+                                <div style={{ fontWeight: "bold" }}>
+                                    Cannot connect to this block, precedence
+                                    condition unmet:
+                                </div>
+                            ) : (
+                                ""
+                            )}
+                            {[...unmet].map((un) => (
+                                <div>{un}</div>
+                            ))}
+                        </div>
+                    )}
+                </div>
                 {/* Render argument appropriately */}
                 {proc.arguments.map((aType, index) => {
                     switch (aType) {
@@ -98,7 +137,7 @@ for (const proc of allProcesses) {
                         default:
                             return null
                     }
-                })}                
+                })}
             </div>
         )
     }
