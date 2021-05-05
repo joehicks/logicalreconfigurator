@@ -1,7 +1,7 @@
 module.exports = {
   apps : [{
     name: "logicalreconfigurator",
-    script: "./backend.js",
+    script: "./serve-demo.js",
     env: {
       NODE_ENV: "development",
     },
