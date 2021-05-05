@@ -2,6 +2,7 @@
 import { allProcesses, precedenceDescriptions } from "./process.js"
 import { Handle } from "react-flow-renderer"
 import argTypes from "./argtypes.js"
+import { checkPrecedenceIntoProcess } from "./checkPrecedence.js"
 
 // Create an empty object to return
 const customNodes = {}
@@ -13,27 +14,12 @@ for (const proc of allProcesses) {
         let invalid = false
         let needs = []
         let precludes = []
+
+        let unmet = []
+
         if (data.draggingPrecedence.dragging && data.draggingPrecedence.id !== data.id) {
-            const prec = data.draggingPrecedence.precedence
-            for (let i = 0; i < 6; i++) {
-                const mask = 2**i
-                for (const p of prec) {
-                    const condNeeded = !!(data.proc.needs & mask)
-                    const condPrecluded = !!(data.proc.precludes & mask)
-                    const condition = !!(p & mask)
-
-                    if (condNeeded && !condition) {
-                        needs.push(5 - i)
-                    }
-
-                    if (condPrecluded && condition) {
-                        precludes.push(5 - i)
-                    }
-                    const valid =  needs.length === 0 && precludes.length === 0 //!!(data.proc.needs & p) && !(data.proc.precludes & p)
-                    
-                    invalid = invalid || !valid
-                }
-            }
+            unmet = checkPrecedenceIntoProcess(data.draggingPrecedence.precedence, data.proc)
+            invalid = unmet.length > 0
         }
         return (
             <div
@@ -60,6 +46,7 @@ for (const proc of allProcesses) {
                         {invalid ? <div style={{fontWeight: "bold"}}>
                             Cannot connect to this block, precedence condition unmet:
                         </div>: ""}
+                        {[...unmet].map(un => <div>{un}</div>)}
                         {[...needs].map(e => <div>{precedenceDescriptions.needs[e]}</div>)}
                         {[...precludes].map(e => <div>{precedenceDescriptions.precludes[e]}</div>)}
                     </div>
