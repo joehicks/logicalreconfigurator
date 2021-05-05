@@ -166,6 +166,13 @@ const App = () => {
         saveSequence(seq)
     }
 
+    const [draggingPrecedence, setDraggingPrecedence] = useState({
+        dragging: false,
+        precedence: 0,
+        id: ""
+    })
+
+
     // Runs every time the sequence array state changes to update the flow state and check compilability
     useEffect(() => {
         // Convert the sequence array into an array of nodes
@@ -176,9 +183,14 @@ const App = () => {
                 updateArg: updateArg,
                 getArg: getArg,
                 id: s.id,
+                precedence: s.process === 127 ? [0] : [],
+                seq: s,
+                exits: [],
+                proc: processes(s.process),
+                draggingPrecedence: draggingPrecedence
             },
             // TODO: Smarter positioning
-            position: s.position || { x: 100, y: 100 },
+            position: s.position || { x: 100, y: 100 }
         }))
 
         // Extract edges from the sequence array
@@ -187,7 +199,8 @@ const App = () => {
         // Style for edges
         const edgeStyle = {}
 
-        for (const s of sequence) {
+        for (const n of nodes) {
+            const s = n.data.seq
             // Pull expected arguments for each instructions
             const procArgs = processes(s.process).arguments
             // Iterate through the instruction's arguments
@@ -203,6 +216,8 @@ const App = () => {
                         targetHandle: "in",
                         style: edgeStyle,
                     })
+
+                    n.data.exits.push(s.arguments[i])
                 }
             }
             // If there is no next property then skip
@@ -218,19 +233,40 @@ const App = () => {
                 targetHandle: "in",
                 style: edgeStyle,
             })
+            n.data.exits.push(s.next)
         }
+
+        let changesMade = true
+
+        while (changesMade) {
+            changesMade = false
+            for (const n of nodes) {
+                for (const prec of n.data.precedence) {
+                    for (const exit of n.data.exits) {
+                        const newPrec = (prec | n.data.proc.sets) & ~n.data.proc.clears & 0b111111
+                        const destination = nodes.find(n => n.id === exit)
+                        if (!destination.data.precedence.includes(newPrec)) {
+                            destination.data.precedence.push(newPrec)
+                            changesMade = true
+                        }
+                    }
+                }
+            }
+        }
+
         // Update the state
         setFlow([...nodes, ...edges])
 
         // Run a compilation and set the compilable and maps state
-        const compiled = compile(sequence, false, true)
-        setCompilable(!!compiled)
-        if (!!compiled) {
-            console.log(compiled.seq)
-           // setMap(compiled.map)
-        }
+        // TODO: Re-enable compilation
+        // const compiled = compile(sequence, false, true)
+        setCompilable(true)
+        // if (!!compiled) {
+        //     //console.log(compiled.seq)
+        //    // setMap(compiled.map)
+        // }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [sequence])
+    }, [sequence, draggingPrecedence])
 
     // Handling selection and removal of nodes & edges
     const [selection, setSelection] = useState([])
@@ -240,25 +276,26 @@ const App = () => {
         for (const sel of selection) {
             if (!!sel.source && !!sel.target) {
             } else {
-                const id = sel.id
-                const index = seq.findIndex((s) => s.id === id)
-                if (index < 0) {
-                    return console.log(`No node with id = ${id}`)
+                if (sel.type !== "0" && sel.type !== "127") {
+                    const id = sel.id
+                    const index = seq.findIndex((s) => s.id === id)
+                    if (index < 0) {
+                        return console.log(`No node with id = ${id}`)
+                    }
+                    seq.splice(index, 1)
+                    seq = seq.map((inst) => {
+                        inst.next = inst.next === id ? null : inst.next
+                        inst.arguments = inst.arguments.map((arg) =>
+                            arg === id ? null : arg
+                        )
+                        return inst
+                    })
                 }
-                seq.splice(index, 1)
-                seq = seq.map((inst) => {
-                    inst.next = inst.next === id ? null : inst.next
-                    inst.arguments = inst.arguments.map((arg) =>
-                        arg === id ? null : arg
-                    )
-                    return inst
-                })
             }
         }
         setSequence(seq)
         saveSequence(seq)
     }
-
     // JSX to render App component
     return (
         <div
@@ -288,18 +325,37 @@ const App = () => {
                     padding: "1rem",
                 }}
             >
+                <strong>SMC HAS-205</strong><br/>
+                <em>B12 Robotics Lab<br/>Advanced Manufacturing Building<br/>Jubilee Campus<br/>University of Nottingham</em>
+                
+                <h2>Available Processes</h2>
                 {/* Build from processes */}
                 {allProcesses
                     .filter((p) => !p.hide)
+                    .filter(p => p.id !== 0 & p.id !== 127)
                     .map((p, i) => (
                         <div
                             key={`processlist${i}`}
                             onClick={() => addNew(p.id)}
+                            style={{
+                                margin: "0.2rem",
+                                padding: "0.5rem",
+                                backgroundColor: "#ffffff",
+                                border: "1px solid black"
+                            }}
                         >
                             {p.name}
                         </div>
                     ))}
-                <div onClick={() => removeSelection()}>DELETE</div>
+                    {
+                        (selection || []).length > 0 ? 
+                        <div style={{
+                            textDecoration: "underline",
+                            cursor: "pointer",
+                            fontSize: "1.5rem"
+                        }} onClick={() => removeSelection()}>DELETE SELECTED BLOCK</div> :
+                        ""
+                    }
                 <div
                     style={{
                         color: compilable ? "inherit" : "red",
@@ -340,8 +396,38 @@ const App = () => {
                 onNodeDragStop={(e, node) => {
                     updatePosition(node.id, node.position)
                 }}
+                // Validation of connectability
+                onConnectStart={(event, { nodeId, handleType }) => {
+                    const n = flow.find(n => n.id === nodeId)
+                    setDraggingPrecedence({
+                        dragging: true,
+                        precedence: n.data.precedence
+                            .map(p => {
+                                return (p | n.data.proc.sets) & ~n.data.proc.clears & 0b111111
+                            }),
+                        id: n.id
+                    })
+                }}
+                onConnectStop={(event) => {
+                    setDraggingPrecedence({
+                        dragging: false,
+                        precedence: 0,
+                        id: ""
+                    })
+                console.log("connect stop")
+                }}
                 onSelectionChange={setSelection}
             >
+                {
+                    draggingPrecedence.dragging && draggingPrecedence.precedence.length === 0 ? 
+                    <div style={{
+                        padding: "1rem",
+                        fontSize: "2rem",
+                        color: "red"
+                    }}>
+                        Precedence guidance unavailable for orphan blocks
+                    </div> : ""
+                }
                 <Controls />
             </ReactFlow>
         </div>
