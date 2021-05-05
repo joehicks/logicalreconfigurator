@@ -27,7 +27,7 @@ for (const proc of allProcesses) {
                     padding: "1rem",
                     border: invalid ? "4px solid #ddd" : `${selected ? "3" : "1"}px solid black`,
                     backgroundColor: "white",
-                    color: invalid ? "#ddd" : "inherit"
+                    color: invalid ? "#888" : "inherit"
                 }}
             >
                 {/* In & out handles */}
