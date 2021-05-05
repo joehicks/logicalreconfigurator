@@ -341,7 +341,8 @@ const App = () => {
                                 margin: "0.2rem",
                                 padding: "0.5rem",
                                 backgroundColor: "#ffffff",
-                                border: "1px solid black"
+                                border: "1px solid black",
+                                cursor: "pointer"
                             }}
                         >
                             {p.name}
