@@ -1,5 +1,5 @@
 // Import modules
-import { allProcesses, precedenceDescriptions } from "./process.js"
+import { allProcesses } from "./process.js"
 import { Handle } from "react-flow-renderer"
 import argTypes from "./argtypes.js"
 import { checkPrecedenceIntoProcess } from "./checkPrecedence.js"
