@@ -35,7 +35,7 @@ for (const proc of allProcesses) {
                     <Handle type="target" id="in" position="left" style={invalid ? 
                         {display: "grid", placeItems: "center", cursor: "not-allowed"} :
                     {}}>
-                        {invalid ? <img src="no.svg" style={{margin: "-0.5rem", height: "1rem"}}/> : ""}
+                        {invalid ? <img src="no.svg" alt="Cannot connect to this node" style={{margin: "-0.5rem", height: "1rem"}}/> : ""}
                     </Handle>
                 ) : (
                     ""
