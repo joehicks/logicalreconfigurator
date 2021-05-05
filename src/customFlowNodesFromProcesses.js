@@ -1,5 +1,5 @@
 // Import modules
-import { allProcesses } from "./process.js"
+import { allProcesses, precedenceDescriptions } from "./process.js"
 import { Handle } from "react-flow-renderer"
 import argTypes from "./argtypes.js"
 
@@ -10,17 +10,42 @@ const customNodes = {}
 for (const proc of allProcesses) {
     // Create a custom node element
     const node = ({ data, selected }) => {
+        let invalid = false
+        let needs = []
+        let precludes = []
+        if (data.draggingPrecedence.dragging && data.draggingPrecedence.id !== data.id) {
+            const prec = data.draggingPrecedence.precedence
+            for (let i = 0; i < 6; i++) {
+                const mask = 2**i
+                for (const p of prec) {
+                    const condNeeded = !!(data.proc.needs & mask)
+                    const condPrecluded = !!(data.proc.precludes & mask)
+                    const condition = !!(p & mask)
+
+                    if (condNeeded && !condition) {
+                        needs.push(5 - i)
+                    }
+
+                    if (condPrecluded && condition) {
+                        precludes.push(5 - i)
+                    }
+                    const valid =  needs.length === 0 && precludes.length === 0 //!!(data.proc.needs & p) && !(data.proc.precludes & p)
+                    
+                    invalid = invalid || !valid
+                }
+            }
+        }
         return (
             <div
                 style={{
                     padding: "1rem",
-                    border: `${selected ? "3" : "1"}px solid black`,
+                    border: invalid ? "4px solid red" : `${selected ? "3" : "1"}px solid black`,
                     backgroundColor: "white",
                 }}
             >
                 {/* In & out handles */}
                 {!proc.start ? (
-                    <Handle type="target" id="in" position="left" />
+                    <Handle type="target" id="in" position="left"/>
                 ) : (
                     ""
                 )}
@@ -31,7 +56,14 @@ for (const proc of allProcesses) {
                 )}
                 {/* Process title */}
                 <strong>{proc.name}</strong>
-
+                <div>{!invalid ? "" : <div style={{color: "red"}}>
+                        {invalid ? <div style={{fontWeight: "bold"}}>
+                            Cannot connect to this block, precedence condition unmet:
+                        </div>: ""}
+                        {[...needs].map(e => <div>{precedenceDescriptions.needs[e]}</div>)}
+                        {[...precludes].map(e => <div>{precedenceDescriptions.precludes[e]}</div>)}
+                    </div>
+                }</div>
                 {/* Render argument appropriately */}
                 {proc.arguments.map((aType, index) => {
                     switch (aType) {
@@ -79,7 +111,7 @@ for (const proc of allProcesses) {
                         default:
                             return null
                     }
-                })}
+                })}                
             </div>
         )
     }
