@@ -24,7 +24,7 @@ const compile = (instr, dry, mappings) => {
     // - id & next in correct format
     // - process number, valid
     console.log("Compile start")
-    console.log(instructions)
+    //console.log(instructions)
     for (let i of instructions) {
         //console.log("Checking", i.id)
         if (!i.id || !i.id.match(/^INST[a-f0-9]{8}$/)) {
